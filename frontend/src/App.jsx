@@ -1,7 +1,7 @@
 function App() {
   return (
     <div>
-      <h1>Warehouse Dashboard Test</h1>
+      <h1>Warehouse Dashboard Test2</h1>
     </div>
   )
 }
