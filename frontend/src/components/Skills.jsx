@@ -1,17 +1,22 @@
-const skills = [
-  "React",
-  "JavaScript",
-  "Python",
-  "FastAPI",
-  "AWS",
-  "Tailwind CSS",
-  "Git",
-  "PostgreSQL",
-  "Docker",
-  "AI Automation"
-];
+import { useEffect, useState } from "react";
+import { API_URL } from "../config";
 
 export default function Skills() {
+  const [skills, setSkills] = useState([]);
+
+  useEffect(() => {
+    function fetchSkills() {
+      fetch(`${API_URL}/skills`)
+        .then((res) => res.json())
+        .then((data) => setSkills(data))
+        .catch((err) => console.error(err));
+    }
+
+    fetchSkills();
+    window.addEventListener('portfolio-data-updated', fetchSkills);
+    return () => window.removeEventListener('portfolio-data-updated', fetchSkills);
+  }, []);
+
   return (
     <section className="bg-zinc-950 text-white py-24 px-6">
 

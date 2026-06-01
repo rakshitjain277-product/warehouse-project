@@ -1,41 +1,33 @@
-const projects = [
-  {
-    title: "AWS Portfolio Website",
-    description:
-      "Modern portfolio website deployed using AWS Amplify and EC2.",
-    tech: ["React", "Tailwind", "AWS"],
-    link: "https://github.com/",
-  },
-  {
-    title: "AI Automation Platform",
-    description:
-      "Built AI workflows using Python, APIs and automation tools.",
-    tech: ["Python", "FastAPI", "OpenAI"],
-    link: "https://github.com/",
-  },
-  {
-    title: "Warehouse Management System",
-    description:
-      "Inventory and warehouse operations dashboard with analytics.",
-    tech: ["React", "Python", "PostgreSQL"],
-    link: "https://github.com/",
-  },
-];
+import { useEffect, useState } from "react";
+import { API_URL } from "../config";
 
 export default function Projects() {
+  const [projects, setProjects] = useState([]);
+
+  useEffect(() => {
+    function fetchProjects() {
+      fetch(`${API_URL}/projects`)
+      .then((res) => res.json())
+      .then((data) => setProjects(data))
+      .catch((err) => console.error(err));
+    }
+
+    fetchProjects();
+    window.addEventListener('portfolio-data-updated', fetchProjects);
+    return () => window.removeEventListener('portfolio-data-updated', fetchProjects);
+  }, []);
+
   return (
     <section
       id="projects"
       className="bg-zinc-950 text-white py-24 px-6"
     >
       <div className="max-w-7xl mx-auto">
-
         <h2 className="text-5xl font-bold text-center mb-16">
           Projects
         </h2>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-
           {projects.map((project, index) => (
             <div
               key={index}
@@ -70,7 +62,6 @@ export default function Projects() {
               </a>
             </div>
           ))}
-
         </div>
       </div>
     </section>

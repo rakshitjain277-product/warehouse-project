@@ -1,0 +1,73 @@
+{
+  "profile": {
+    "name": "Rakshit Jain",
+    "title": "Product Manager | Supply Chain Technology",
+    "company": "Apollo Supply Chain",
+    "tagline": "Building WMS, TMS, AI Automation and Digital Supply Chain Solutions",
+    "image": "/profile.jpg",
+    "resume": "/resume.pdf",
+    "skills": [
+      "Product Management",
+      "WMS",
+      "TMS",
+      "Supply Chain",
+      "React",
+      "FastAPI",
+      "AWS",
+      "AI Automation",
+      "Machine Learning",
+      "AI Vibe Coding"
+    ]
+  },
+  "projects": [
+    {
+      "title": "JAWA",
+      "description": "Jawa WMS Implementation",
+      "tech": [],
+      "link": "",
+      "id": "4504674857174fc4b97e44e8335afc22"
+    },
+    {
+      "title": "VisionWare",
+      "description": "3D Warehouse Analytics",
+      "tech": [],
+      "link": "",
+      "id": "18fb9572b8c84c3685cb4cc0a5145b8a"
+    },
+    {
+      "title": "Test Project",
+      "description": "Testing",
+      "tech": [
+        "Node",
+        "React"
+      ],
+      "link": "https://test.com",
+      "id": "c601f39772d94ce3b5fad80c7ebbed48"
+    },
+    {
+      "title": "E-commerce Platform",
+      "description": "Full-featured e-commerce platform with payments integration",
+      "tech": [
+        "React",
+        "Node.js",
+        "Stripe"
+      ],
+      "link": "",
+      "id": "64105ab4a7d34913b468bf82ec4d1932"
+    }
+  ],
+  "experience": [],
+  "skills": [
+    "Product Management",
+    "WMS",
+    "TMS",
+    "Supply Chain",
+    "React",
+    "FastAPI",
+    "AWS",
+    "AI Automation",
+    "Machine Learning",
+    "AI Vibe Coding"
+  ],
+  "contacts": []
+}

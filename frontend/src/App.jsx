@@ -7,11 +7,15 @@ import Skills from './components/Skills';
 import Projects from './components/Projects';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
+import Admin from './Admin';
+import { useState } from 'react';
 
 function App() {
+  const [showAdmin, setShowAdmin] = useState(false);
+
   return (
     <div className="min-h-screen bg-black text-white">
-      <Navbar />
+      <Navbar onAdminClick={() => setShowAdmin(true)} />
 
       <main>
         <section id="home">
@@ -36,6 +40,8 @@ function App() {
       </main>
 
       <Footer />
+
+      {showAdmin && <Admin onClose={() => setShowAdmin(false)} />}
     </div>
   );
 }

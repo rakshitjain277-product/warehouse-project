@@ -1,25 +1,19 @@
-export default function Navbar() {
+export default function Navbar({ onAdminClick }) {
   return (
-    <nav className="fixed top-0 left-0 w-full bg-black/70 backdrop-blur-md text-white px-8 py-5 flex justify-between items-center z-50">
+    <nav className="fixed top-0 w-full bg-black text-white p-4">
+      <div className="max-w-7xl mx-auto flex justify-between items-center">
+        <h1 className="font-bold">Rakshit Jain</h1>
 
-      <h1 className="text-2xl font-bold">
-        RJ
-      </h1>
-
-      <div className="flex gap-6 text-lg">
-
-        <a href="#projects" className="hover:text-gray-400">
-          Projects
-        </a>
-
-        <a href="#experience" className="hover:text-gray-400">
-          Experience
-        </a>
-
-        <a href="#contact" className="hover:text-gray-400">
-          Contact
-        </a>
-
+        <div className="flex gap-6 items-center">
+          <a href="#home">Home</a>
+          <a href="#experience">Experience</a>
+          <a href="#skills">Skills</a>
+          <a href="#projects">Projects</a>
+          <a href="#contact">Contact</a>
+          <button onClick={onAdminClick} className="text-sm px-3 py-1 border rounded">
+            Admin
+          </button>
+        </div>
       </div>
     </nav>
   );
