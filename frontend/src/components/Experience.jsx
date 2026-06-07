@@ -1,28 +1,22 @@
-const experience = [
-  {
-    company: "Your Company",
-    role: "Software Engineer",
-    duration: "2024 - Present",
-    description:
-      "Building scalable applications using React, Python and cloud technologies."
-  },
-  {
-    company: "Freelance / Personal Projects",
-    role: "Full Stack Developer",
-    duration: "2023 - 2024",
-    description:
-      "Worked on automation systems, AI integrations and AWS deployments."
-  },
-  {
-    company: "Learning & Building",
-    role: "Self Driven Developer",
-    duration: "2022 - 2023",
-    description:
-      "Explored frontend, backend, databases, APIs and modern web architecture."
-  }
-];
+import { useEffect, useState } from "react";
+import { API_URL } from "../config";
 
 export default function Experience() {
+  const [experience, setExperience] = useState([]);
+
+  useEffect(() => {
+    function fetchExperience() {
+      fetch(`${API_URL}/experience`)
+        .then((res) => res.json())
+        .then((data) => setExperience(data))
+        .catch((err) => console.error(err));
+    }
+
+    fetchExperience();
+    window.addEventListener('portfolio-data-updated', fetchExperience);
+    return () => window.removeEventListener('portfolio-data-updated', fetchExperience);
+  }, []);
+
   return (
     <section className="bg-black text-white py-24 px-6">
       <div className="max-w-5xl mx-auto">

@@ -56,7 +56,29 @@
       "id": "64105ab4a7d34913b468bf82ec4d1932"
     }
   ],
-  "experience": [],
+  "experience": [
+    {
+      "company": "Your Company",
+      "role": "Software Engineer",
+      "duration": "2024 - Present",
+      "description": "Building scalable applications using React, Python and cloud technologies.",
+      "id": "5f8ed95b8c4240208c64c6e6405e4016"
+    },
+    {
+      "company": "Freelance / Personal Projects",
+      "role": "Full Stack Developer",
+      "duration": "2023 - 2024",
+      "description": "Worked on automation systems, AI integrations and AWS deployments.",
+      "id": "2d016919a3eb44f79c6585b334e4c7ac"
+    },
+    {
+      "company": "Learning & Building",
+      "role": "Self Driven Developer",
+      "duration": "2022 - 2023",
+      "description": "Explored frontend, backend, databases, APIs and modern web architecture.",
+      "id": "7c07806f0d3641a8a54edfa702fd7ff0"
+    }
+  ],
   "skills": [
     "Product Management",
     "WMS",

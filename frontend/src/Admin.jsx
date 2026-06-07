@@ -8,6 +8,7 @@ export default function Admin({ onClose }) {
   const [data, setData] = useState(null);
   const [profile, setProfile] = useState({});
   const [project, setProject] = useState({ title: '', description: '', tech: [], link: '' });
+  const [experience, setExperience] = useState({ company: '', role: '', duration: '', description: '' });
   const [newSkill, setNewSkill] = useState('');
   const skills = profile.skills || data?.skills || [];
 
@@ -55,6 +56,34 @@ export default function Admin({ onClose }) {
 
   async function deleteProject(id) {
     await fetch(`${API_URL}/admin/projects/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+    window.dispatchEvent(new Event('portfolio-data-updated'));
+    fetchData();
+  }
+
+  async function addExperience(e) {
+    e.preventDefault();
+    await fetch(`${API_URL}/admin/experience`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(experience)
+    });
+    setExperience({ company: '', role: '', duration: '', description: '' });
+    window.dispatchEvent(new Event('portfolio-data-updated'));
+    fetchData();
+  }
+
+  async function updateExperience(id, nextExperience) {
+    await fetch(`${API_URL}/admin/experience/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(nextExperience)
+    });
+    window.dispatchEvent(new Event('portfolio-data-updated'));
+    fetchData();
+  }
+
+  async function deleteExperience(id) {
+    await fetch(`${API_URL}/admin/experience/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
     window.dispatchEvent(new Event('portfolio-data-updated'));
     fetchData();
   }
@@ -115,6 +144,57 @@ export default function Admin({ onClose }) {
                   <button className="px-3 py-1 border rounded">Save Profile</button>
                 </div>
               </form>
+            </section>
+
+            <section>
+              <h3 className="font-bold">Experience</h3>
+              <form onSubmit={addExperience} className="mt-2 space-y-2">
+                <input className="w-full p-2 border" value={experience.role} onChange={e => setExperience({ ...experience, role: e.target.value })} placeholder="Role" required />
+                <input className="w-full p-2 border" value={experience.company} onChange={e => setExperience({ ...experience, company: e.target.value })} placeholder="Company" required />
+                <input className="w-full p-2 border" value={experience.duration} onChange={e => setExperience({ ...experience, duration: e.target.value })} placeholder="Duration" required />
+                <textarea className="w-full p-2 border" value={experience.description} onChange={e => setExperience({ ...experience, description: e.target.value })} placeholder="Description" required />
+                <div>
+                  <button type="submit" className="px-3 py-1 border rounded bg-blue-600 text-white">Add Experience</button>
+                </div>
+              </form>
+
+              <div className="mt-3 space-y-3">
+                {(data.experience || []).map((item, index) => (
+                  <form
+                    key={item.id || index}
+                    onSubmit={e => {
+                      e.preventDefault();
+                      updateExperience(item.id, item);
+                    }}
+                    className="border p-3 space-y-2"
+                  >
+                    <input className="w-full p-2 border" value={item.role || ''} onChange={e => {
+                      const nextExperience = [...(data.experience || [])];
+                      nextExperience[index] = { ...item, role: e.target.value };
+                      setData({ ...data, experience: nextExperience });
+                    }} placeholder="Role" required />
+                    <input className="w-full p-2 border" value={item.company || ''} onChange={e => {
+                      const nextExperience = [...(data.experience || [])];
+                      nextExperience[index] = { ...item, company: e.target.value };
+                      setData({ ...data, experience: nextExperience });
+                    }} placeholder="Company" required />
+                    <input className="w-full p-2 border" value={item.duration || ''} onChange={e => {
+                      const nextExperience = [...(data.experience || [])];
+                      nextExperience[index] = { ...item, duration: e.target.value };
+                      setData({ ...data, experience: nextExperience });
+                    }} placeholder="Duration" required />
+                    <textarea className="w-full p-2 border" value={item.description || ''} onChange={e => {
+                      const nextExperience = [...(data.experience || [])];
+                      nextExperience[index] = { ...item, description: e.target.value };
+                      setData({ ...data, experience: nextExperience });
+                    }} placeholder="Description" required />
+                    <div className="flex gap-2">
+                      <button type="submit" className="px-3 py-1 border rounded bg-blue-600 text-white">Save</button>
+                      <button type="button" onClick={() => deleteExperience(item.id)} className="px-3 py-1 border rounded">Delete</button>
+                    </div>
+                  </form>
+                ))}
+              </div>
             </section>
 
             <section>

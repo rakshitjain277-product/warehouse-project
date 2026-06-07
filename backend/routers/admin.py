@@ -43,6 +43,13 @@ class Project(BaseModel):
     link: Optional[str]
 
 
+class Experience(BaseModel):
+    company: str
+    role: str
+    duration: str
+    description: str
+
+
 def require_admin(token: Optional[str]):
     if not token:
         raise HTTPException(status_code=401, detail="Missing authorization token")
@@ -120,6 +127,45 @@ def delete_project(project_id: str, authorization: Optional[str] = Header(None))
     if len(new_projects) == len(projects):
         raise HTTPException(status_code=404, detail="Project not found")
     data["projects"] = new_projects
+    utils.save_data(data)
+    return {"success": True}
+
+
+@router.post("/admin/experience")
+def add_experience(experience: Experience, authorization: Optional[str] = Header(None)):
+    require_admin(authorization)
+    data = utils.load_data()
+    entries = data.get("experience", [])
+    entry = experience.dict()
+    entry["id"] = uuid.uuid4().hex
+    entries.append(entry)
+    data["experience"] = entries
+    utils.save_data(data)
+    return {"success": True, "experience": entry}
+
+
+@router.put("/admin/experience/{experience_id}")
+def edit_experience(experience_id: str, experience: Experience, authorization: Optional[str] = Header(None)):
+    require_admin(authorization)
+    data = utils.load_data()
+    entries = data.get("experience", [])
+    for entry in entries:
+        if entry.get("id") == experience_id:
+            entry.update(experience.dict())
+            utils.save_data(data)
+            return {"success": True, "experience": entry}
+    raise HTTPException(status_code=404, detail="Experience not found")
+
+
+@router.delete("/admin/experience/{experience_id}")
+def delete_experience(experience_id: str, authorization: Optional[str] = Header(None)):
+    require_admin(authorization)
+    data = utils.load_data()
+    entries = data.get("experience", [])
+    new_entries = [entry for entry in entries if entry.get("id") != experience_id]
+    if len(new_entries) == len(entries):
+        raise HTTPException(status_code=404, detail="Experience not found")
+    data["experience"] = new_entries
     utils.save_data(data)
     return {"success": True}
 
