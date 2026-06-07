@@ -26,11 +26,16 @@ export default function Hero() {
   }
 
   return (
-    <section className="min-h-screen bg-black text-white flex flex-col justify-center items-center px-6">
+    <section className="min-h-screen bg-black text-white flex flex-col items-center px-6 pt-28 pb-20">
+      <div
+        className="w-full max-w-6xl h-52 md:h-72 rounded-t-xl bg-zinc-900 bg-cover bg-center border border-zinc-800"
+        style={profile.coverImage ? { backgroundImage: `url(${profile.coverImage})` } : undefined}
+      ></div>
+
       <img
         src={profile.image}
         alt="profile"
-        className="w-40 h-40 rounded-full object-cover mb-8 border-4 border-white"
+        className="w-40 h-40 rounded-full object-cover mb-8 border-4 border-white -mt-20 bg-black"
       />
 
       <h1 className="text-6xl md:text-7xl font-bold text-center mb-6">

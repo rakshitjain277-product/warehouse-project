@@ -32,6 +32,7 @@ class ProfileUpdate(BaseModel):
     company: Optional[str] = None
     tagline: Optional[str] = None
     image: Optional[str] = None
+    coverImage: Optional[str] = None
     resume: Optional[str] = None
     skills: Optional[list] = None
 

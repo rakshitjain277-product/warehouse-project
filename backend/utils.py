@@ -16,12 +16,49 @@ except Exception:
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), "data.json")
 
+DEFAULT_EXPERIENCE = [
+    {
+        "company": "Your Company",
+        "role": "Software Engineer",
+        "duration": "2024 - Present",
+        "description": "Building scalable applications using React, Python and cloud technologies.",
+        "id": "5f8ed95b8c4240208c64c6e6405e4016",
+    },
+    {
+        "company": "Freelance / Personal Projects",
+        "role": "Full Stack Developer",
+        "duration": "2023 - 2024",
+        "description": "Worked on automation systems, AI integrations and AWS deployments.",
+        "id": "2d016919a3eb44f79c6585b334e4c7ac",
+    },
+    {
+        "company": "Learning & Building",
+        "role": "Self Driven Developer",
+        "duration": "2022 - 2023",
+        "description": "Explored frontend, backend, databases, APIs and modern web architecture.",
+        "id": "7c07806f0d3641a8a54edfa702fd7ff0",
+    },
+]
+
+
+def normalize_data(data: Dict[str, Any]) -> Dict[str, Any]:
+    data.setdefault("profile", {})
+    data["profile"].setdefault("image", "/profile.jpg")
+    data["profile"].setdefault("coverImage", "")
+    data["profile"].setdefault("resume", "/resume.pdf")
+    data.setdefault("projects", [])
+    if not data.get("experience"):
+        data["experience"] = DEFAULT_EXPERIENCE.copy()
+    data.setdefault("skills", data.get("profile", {}).get("skills", []))
+    data.setdefault("contacts", [])
+    return data
+
 
 def load_data() -> Dict[str, Any]:
     if not os.path.exists(DATA_PATH):
-        return {}
+        return normalize_data({})
     with open(DATA_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)
+        return normalize_data(json.load(f))
 
 
 def save_data(data: Dict[str, Any]) -> None:

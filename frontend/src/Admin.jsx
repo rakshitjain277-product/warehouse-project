@@ -10,7 +10,26 @@ export default function Admin({ onClose }) {
   const [project, setProject] = useState({ title: '', description: '', tech: [], link: '' });
   const [experience, setExperience] = useState({ company: '', role: '', duration: '', description: '' });
   const [newSkill, setNewSkill] = useState('');
+  const [message, setMessage] = useState('');
   const skills = profile.skills || data?.skills || [];
+
+  async function requestJson(url, options = {}) {
+    const res = await fetch(url, options);
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(body.detail || body.message || 'Request failed');
+    }
+    return body;
+  }
+
+  function readImageFile(file, field) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setProfile(currentProfile => ({ ...currentProfile, [field]: reader.result }));
+    };
+    reader.readAsDataURL(file);
+  }
 
   async function login(e) {
     e.preventDefault();
@@ -28,21 +47,25 @@ export default function Admin({ onClose }) {
 
   async function fetchData(authToken = token) {
     if (!authToken) return;
-    const res = await fetch(`${API_URL}/admin/data`, { headers: { Authorization: `Bearer ${authToken}` } });
-    const j = await res.json();
+    const j = await requestJson(`${API_URL}/admin/data`, { headers: { Authorization: `Bearer ${authToken}` } });
     setData(j);
     setProfile(j.profile || {});
   }
 
   async function saveProfile(e) {
     e.preventDefault();
-    await fetch(`${API_URL}/admin/profile`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify(profile)
-    });
-    window.dispatchEvent(new Event('portfolio-data-updated'));
-    fetchData();
+    try {
+      await requestJson(`${API_URL}/admin/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(profile)
+      });
+      setMessage('Profile saved.');
+      window.dispatchEvent(new Event('portfolio-data-updated'));
+      fetchData();
+    } catch (err) {
+      setMessage(`Profile save failed: ${err.message}`);
+    }
   }
 
   async function addProject(e) {
@@ -62,30 +85,45 @@ export default function Admin({ onClose }) {
 
   async function addExperience(e) {
     e.preventDefault();
-    await fetch(`${API_URL}/admin/experience`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify(experience)
-    });
-    setExperience({ company: '', role: '', duration: '', description: '' });
-    window.dispatchEvent(new Event('portfolio-data-updated'));
-    fetchData();
+    try {
+      await requestJson(`${API_URL}/admin/experience`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(experience)
+      });
+      setExperience({ company: '', role: '', duration: '', description: '' });
+      setMessage('Experience added.');
+      window.dispatchEvent(new Event('portfolio-data-updated'));
+      fetchData();
+    } catch (err) {
+      setMessage(`Experience add failed: ${err.message}`);
+    }
   }
 
   async function updateExperience(id, nextExperience) {
-    await fetch(`${API_URL}/admin/experience/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify(nextExperience)
-    });
-    window.dispatchEvent(new Event('portfolio-data-updated'));
-    fetchData();
+    try {
+      await requestJson(`${API_URL}/admin/experience/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(nextExperience)
+      });
+      setMessage('Experience saved.');
+      window.dispatchEvent(new Event('portfolio-data-updated'));
+      fetchData();
+    } catch (err) {
+      setMessage(`Experience save failed: ${err.message}`);
+    }
   }
 
   async function deleteExperience(id) {
-    await fetch(`${API_URL}/admin/experience/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-    window.dispatchEvent(new Event('portfolio-data-updated'));
-    fetchData();
+    try {
+      await requestJson(`${API_URL}/admin/experience/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      setMessage('Experience deleted.');
+      window.dispatchEvent(new Event('portfolio-data-updated'));
+      fetchData();
+    } catch (err) {
+      setMessage(`Experience delete failed: ${err.message}`);
+    }
   }
 
   async function addSkill(e) {
@@ -133,6 +171,12 @@ export default function Admin({ onClose }) {
 
         {token && data && (
           <div className="mt-4 space-y-6">
+            {message && (
+              <div className="border p-2 text-sm">
+                {message}
+              </div>
+            )}
+
             <section>
               <h3 className="font-bold">Profile</h3>
               <form onSubmit={saveProfile} className="mt-2 space-y-2">
@@ -140,6 +184,16 @@ export default function Admin({ onClose }) {
                 <input className="w-full p-2 border" value={profile.title || ''} onChange={e => setProfile({ ...profile, title: e.target.value })} placeholder="Title" />
                 <input className="w-full p-2 border" value={profile.company || ''} onChange={e => setProfile({ ...profile, company: e.target.value })} placeholder="Company" />
                 <input className="w-full p-2 border" value={profile.tagline || ''} onChange={e => setProfile({ ...profile, tagline: e.target.value })} placeholder="Tagline" />
+                <input className="w-full p-2 border" value={profile.image || ''} onChange={e => setProfile({ ...profile, image: e.target.value })} placeholder="Profile photo URL" />
+                <input className="w-full p-2 border" type="file" accept="image/*" onChange={e => readImageFile(e.target.files?.[0], 'image')} />
+                <input className="w-full p-2 border" value={profile.coverImage || ''} onChange={e => setProfile({ ...profile, coverImage: e.target.value })} placeholder="Cover photo URL" />
+                <input className="w-full p-2 border" type="file" accept="image/*" onChange={e => readImageFile(e.target.files?.[0], 'coverImage')} />
+                <div className="border p-2">
+                  <div className="h-28 bg-zinc-200 bg-cover bg-center" style={profile.coverImage ? { backgroundImage: `url(${profile.coverImage})` } : undefined}></div>
+                  {profile.image && (
+                    <img src={profile.image} alt="Profile preview" className="w-20 h-20 rounded-full object-cover border-4 border-white -mt-10 ml-4 bg-white" />
+                  )}
+                </div>
                 <div>
                   <button className="px-3 py-1 border rounded">Save Profile</button>
                 </div>
