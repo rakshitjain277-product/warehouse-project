@@ -77,8 +77,8 @@ export default function Admin({ onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-start justify-center p-8 z-50">
-      <div className="bg-white text-black rounded-lg w-full max-w-4xl p-6">
+    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-start justify-center p-4 md:p-8 z-50 overflow-y-auto">
+      <div className="bg-white text-black rounded-lg w-full max-w-4xl max-h-[calc(100vh-2rem)] md:max-h-[calc(100vh-4rem)] overflow-y-auto p-6">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold">Admin Panel</h2>
           <div>
