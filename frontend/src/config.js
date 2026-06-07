@@ -1,1 +1,1 @@
-export const API_URL = "http://13.61.185.78:8000";
+export const API_URL = "https://13.61.185.78.nip.io";
