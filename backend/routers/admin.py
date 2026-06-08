@@ -35,6 +35,7 @@ class ProfileUpdate(BaseModel):
     coverImage: Optional[str] = None
     resume: Optional[str] = None
     skills: Optional[list] = None
+    theme: Optional[dict] = None
 
 
 class Project(BaseModel):
@@ -115,6 +116,9 @@ def update_profile(payload: ProfileUpdate, authorization: Optional[str] = Header
     for k, v in payload.dict(exclude_unset=True).items():
         if k == "skills":
             data["skills"] = v
+        elif k == "theme":
+            data["theme"] = {**data.get("theme", utils.DEFAULT_THEME), **v}
+            continue
         profile[k] = v
     data["profile"] = profile
     utils.save_data(data)

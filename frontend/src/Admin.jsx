@@ -18,7 +18,9 @@ export default function Admin({ onClose }) {
     const res = await fetch(url, options);
     const body = await res.json().catch(() => ({}));
     if (!res.ok) {
-      throw new Error(body.detail || body.message || 'Request failed');
+      const error = new Error(body.detail || body.message || 'Request failed');
+      error.status = res.status;
+      throw error;
     }
     return body;
   }
@@ -83,11 +85,23 @@ export default function Admin({ onClose }) {
   async function saveTheme(e) {
     e.preventDefault();
     try {
-      const result = await requestJson(`${API_URL}/admin/theme`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(theme)
-      });
+      let result;
+      try {
+        result = await requestJson(`${API_URL}/admin/theme`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify(theme)
+        });
+      } catch (err) {
+        if (err.status !== 404) {
+          throw err;
+        }
+        result = await requestJson(`${API_URL}/admin/profile`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ theme })
+        });
+      }
       const savedTheme = result.theme || theme;
       setTheme(savedTheme);
       setMessage('Theme saved.');
