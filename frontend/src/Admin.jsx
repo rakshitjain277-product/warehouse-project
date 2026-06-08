@@ -7,6 +7,7 @@ export default function Admin({ onClose }) {
   const [loginPass, setLoginPass] = useState('');
   const [data, setData] = useState(null);
   const [profile, setProfile] = useState({});
+  const [theme, setTheme] = useState({});
   const [project, setProject] = useState({ title: '', description: '', tech: [], link: '' });
   const [experience, setExperience] = useState({ company: '', role: '', duration: '', description: '' });
   const [newSkill, setNewSkill] = useState('');
@@ -33,15 +34,19 @@ export default function Admin({ onClose }) {
 
   async function login(e) {
     e.preventDefault();
-    const res = await fetch(`${API_URL}/admin/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: loginUser, password: loginPass })
-    });
-    const j = await res.json();
-    if (j.access_token) {
-      setToken(j.access_token);
-      fetchData(j.access_token);
+    setMessage('');
+    try {
+      const j = await requestJson(`${API_URL}/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: loginUser, password: loginPass })
+      });
+      if (j.access_token) {
+        setToken(j.access_token);
+        fetchData(j.access_token);
+      }
+    } catch (err) {
+      setMessage(`Sign in failed: ${err.message}`);
     }
   }
 
@@ -50,6 +55,7 @@ export default function Admin({ onClose }) {
     const j = await requestJson(`${API_URL}/admin/data`, { headers: { Authorization: `Bearer ${authToken}` } });
     setData(j);
     setProfile(j.profile || {});
+    setTheme(j.theme || {});
   }
 
   async function saveProfile(e) {
@@ -65,6 +71,22 @@ export default function Admin({ onClose }) {
       fetchData();
     } catch (err) {
       setMessage(`Profile save failed: ${err.message}`);
+    }
+  }
+
+  async function saveTheme(e) {
+    e.preventDefault();
+    try {
+      await requestJson(`${API_URL}/admin/theme`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(theme)
+      });
+      setMessage('Theme saved.');
+      window.dispatchEvent(new Event('portfolio-data-updated'));
+      fetchData();
+    } catch (err) {
+      setMessage(`Theme save failed: ${err.message}`);
     }
   }
 
@@ -144,8 +166,8 @@ export default function Admin({ onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-start justify-center p-4 md:p-8 z-50 overflow-y-auto">
-      <div className="bg-white text-black rounded-lg w-full max-w-4xl max-h-[calc(100vh-2rem)] md:max-h-[calc(100vh-4rem)] overflow-y-auto p-6">
+    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-start justify-center p-2 md:p-8 z-50 overflow-y-auto overscroll-contain">
+      <div className="bg-white text-black rounded-lg w-full max-w-4xl min-h-[100dvh] md:min-h-0 md:max-h-[calc(100vh-4rem)] overflow-y-auto p-4 md:p-6">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold">Admin Panel</h2>
           <div>
@@ -154,17 +176,22 @@ export default function Admin({ onClose }) {
         </div>
 
         {!token && (
-          <form onSubmit={login} className="mt-4">
+          <form onSubmit={login} className="mt-4 space-y-3">
+            {message && (
+              <div className="border p-2 text-sm">
+                {message}
+              </div>
+            )}
             <div>
               <label>Username</label>
-              <input className="w-full p-2 border" value={loginUser} onChange={e => setLoginUser(e.target.value)} />
+              <input className="w-full p-3 border text-base" value={loginUser} onChange={e => setLoginUser(e.target.value)} autoComplete="username" />
             </div>
-            <div className="mt-2">
+            <div>
               <label>Password</label>
-              <input type="password" className="w-full p-2 border" value={loginPass} onChange={e => setLoginPass(e.target.value)} />
+              <input type="password" className="w-full p-3 border text-base" value={loginPass} onChange={e => setLoginPass(e.target.value)} autoComplete="current-password" />
             </div>
-            <div className="mt-4">
-              <button className="px-4 py-2 bg-blue-600 text-white rounded">Sign In</button>
+            <div>
+              <button type="submit" className="w-full md:w-auto px-4 py-3 bg-blue-600 text-white rounded">Sign In</button>
             </div>
           </form>
         )}
@@ -196,6 +223,52 @@ export default function Admin({ onClose }) {
                 </div>
                 <div>
                   <button className="px-3 py-1 border rounded">Save Profile</button>
+                </div>
+              </form>
+            </section>
+
+            <section>
+              <h3 className="font-bold">Theme</h3>
+              <form onSubmit={saveTheme} className="mt-2 space-y-3">
+                <div className="grid md:grid-cols-3 gap-3">
+                  <label className="space-y-1 text-sm">
+                    <span>Background</span>
+                    <input className="w-full h-11 border" type="color" value={theme.backgroundColor || '#000000'} onChange={e => setTheme({ ...theme, backgroundColor: e.target.value })} />
+                  </label>
+                  <label className="space-y-1 text-sm">
+                    <span>Section</span>
+                    <input className="w-full h-11 border" type="color" value={theme.sectionColor || '#09090b'} onChange={e => setTheme({ ...theme, sectionColor: e.target.value })} />
+                  </label>
+                  <label className="space-y-1 text-sm">
+                    <span>Cards</span>
+                    <input className="w-full h-11 border" type="color" value={theme.surfaceColor || '#18181b'} onChange={e => setTheme({ ...theme, surfaceColor: e.target.value })} />
+                  </label>
+                  <label className="space-y-1 text-sm">
+                    <span>Text</span>
+                    <input className="w-full h-11 border" type="color" value={theme.textColor || '#ffffff'} onChange={e => setTheme({ ...theme, textColor: e.target.value })} />
+                  </label>
+                  <label className="space-y-1 text-sm">
+                    <span>Muted Text</span>
+                    <input className="w-full h-11 border" type="color" value={theme.mutedTextColor || '#a1a1aa'} onChange={e => setTheme({ ...theme, mutedTextColor: e.target.value })} />
+                  </label>
+                  <label className="space-y-1 text-sm">
+                    <span>Accent</span>
+                    <input className="w-full h-11 border" type="color" value={theme.accentColor || '#ffffff'} onChange={e => setTheme({ ...theme, accentColor: e.target.value })} />
+                  </label>
+                </div>
+                <select className="w-full p-2 border" value={theme.fontFamily || 'Inter, Arial, sans-serif'} onChange={e => setTheme({ ...theme, fontFamily: e.target.value })}>
+                  <option value="Inter, Arial, sans-serif">Inter / Arial</option>
+                  <option value="Georgia, serif">Georgia</option>
+                  <option value="'Times New Roman', serif">Times New Roman</option>
+                  <option value="'Courier New', monospace">Courier New</option>
+                  <option value="Verdana, Geneva, sans-serif">Verdana</option>
+                </select>
+                <label className="block text-sm">
+                  <span>Button Radius: {theme.buttonRadius || '12'}px</span>
+                  <input className="w-full" type="range" min="0" max="28" value={theme.buttonRadius || '12'} onChange={e => setTheme({ ...theme, buttonRadius: e.target.value })} />
+                </label>
+                <div>
+                  <button type="submit" className="px-3 py-1 border rounded bg-blue-600 text-white">Save Theme</button>
                 </div>
               </form>
             </section>

@@ -16,6 +16,17 @@ except Exception:
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), "data.json")
 
+DEFAULT_THEME = {
+    "backgroundColor": "#000000",
+    "sectionColor": "#09090b",
+    "surfaceColor": "#18181b",
+    "textColor": "#ffffff",
+    "mutedTextColor": "#a1a1aa",
+    "accentColor": "#ffffff",
+    "fontFamily": "Inter, Arial, sans-serif",
+    "buttonRadius": "12",
+}
+
 DEFAULT_EXPERIENCE = [
     {
         "company": "Your Company",
@@ -49,6 +60,7 @@ def normalize_data(data: Dict[str, Any]) -> Dict[str, Any]:
     data.setdefault("projects", [])
     if not data.get("experience"):
         data["experience"] = DEFAULT_EXPERIENCE.copy()
+    data["theme"] = {**DEFAULT_THEME, **data.get("theme", {})}
     data.setdefault("skills", data.get("profile", {}).get("skills", []))
     data.setdefault("contacts", [])
     return data

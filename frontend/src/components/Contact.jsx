@@ -47,14 +47,14 @@ export default function Contact() {
   };
 
   return (
-    <section className="bg-black text-white py-24 px-6">
+    <section className="theme-section py-24 px-6">
       <div className="max-w-3xl mx-auto">
 
         <h2 className="text-5xl font-bold text-center mb-8">
           Contact Me
         </h2>
 
-        <p className="text-center text-gray-400 mb-10">
+        <p className="text-center theme-muted mb-10">
           Let's build something amazing together.
         </p>
 
@@ -66,7 +66,8 @@ export default function Contact() {
             placeholder="Your Name"
             value={form.name}
             onChange={handleChange}
-            className="w-full p-4 rounded-xl bg-zinc-900 border border-zinc-700"
+            className="w-full p-4 theme-surface border"
+            style={{ borderRadius: 'var(--site-radius)' }}
             required
           />
 
@@ -76,7 +77,8 @@ export default function Contact() {
             placeholder="Your Email"
             value={form.email}
             onChange={handleChange}
-            className="w-full p-4 rounded-xl bg-zinc-900 border border-zinc-700"
+            className="w-full p-4 theme-surface border"
+            style={{ borderRadius: 'var(--site-radius)' }}
             required
           />
 
@@ -86,13 +88,14 @@ export default function Contact() {
             placeholder="Your Message"
             value={form.message}
             onChange={handleChange}
-            className="w-full p-4 rounded-xl bg-zinc-900 border border-zinc-700"
+            className="w-full p-4 theme-surface border"
+            style={{ borderRadius: 'var(--site-radius)' }}
             required
           />
 
           <button
             type="submit"
-            className="w-full bg-white text-black py-4 rounded-xl font-semibold hover:opacity-90"
+            className="w-full theme-primary-button py-4 font-semibold hover:opacity-90"
           >
             Send Message
           </button>

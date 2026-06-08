@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="bg-zinc-950 text-white py-8">
+    <footer className="theme-section-alt py-8">
       <div className="max-w-7xl mx-auto text-center">
 
         <p>© 2026 Rakshit Jain</p>

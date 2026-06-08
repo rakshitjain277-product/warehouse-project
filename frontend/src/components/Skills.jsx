@@ -18,7 +18,7 @@ export default function Skills() {
   }, []);
 
   return (
-    <section className="bg-zinc-950 text-white py-24 px-6">
+    <section className="theme-section-alt py-24 px-6">
 
       <div className="max-w-6xl mx-auto text-center">
 
@@ -31,7 +31,7 @@ export default function Skills() {
           {skills.map((skill, index) => (
             <div
               key={index}
-              className="bg-white text-black px-6 py-3 rounded-2xl text-lg font-semibold hover:scale-105 transition"
+              className="theme-primary-button px-6 py-3 text-lg font-semibold hover:scale-105 transition"
             >
               {skill}
             </div>

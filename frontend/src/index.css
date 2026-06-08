@@ -9,3 +9,45 @@ body {
   background: black;
   font-family: sans-serif;
 }
+
+.theme-nav {
+  background: var(--site-bg);
+  color: var(--site-text);
+}
+
+.theme-section {
+  background: var(--site-bg);
+  color: var(--site-text);
+}
+
+.theme-section-alt {
+  background: var(--site-section);
+  color: var(--site-text);
+}
+
+.theme-surface {
+  background: var(--site-surface);
+  color: var(--site-text);
+  border-color: color-mix(in srgb, var(--site-text) 18%, transparent);
+}
+
+.theme-muted {
+  color: var(--site-muted);
+}
+
+.theme-button {
+  border-radius: var(--site-radius);
+  border-color: var(--site-accent);
+}
+
+.theme-primary-button {
+  background: var(--site-accent);
+  color: var(--site-bg);
+  border-radius: var(--site-radius);
+}
+
+.theme-outline-button {
+  border-color: var(--site-accent);
+  color: var(--site-text);
+  border-radius: var(--site-radius);
+}

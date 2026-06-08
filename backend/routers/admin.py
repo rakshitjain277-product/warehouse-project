@@ -51,6 +51,17 @@ class Experience(BaseModel):
     description: str
 
 
+class ThemeUpdate(BaseModel):
+    backgroundColor: Optional[str] = None
+    sectionColor: Optional[str] = None
+    surfaceColor: Optional[str] = None
+    textColor: Optional[str] = None
+    mutedTextColor: Optional[str] = None
+    accentColor: Optional[str] = None
+    fontFamily: Optional[str] = None
+    buttonRadius: Optional[str] = None
+
+
 def require_admin(token: Optional[str]):
     if not token:
         raise HTTPException(status_code=401, detail="Missing authorization token")
@@ -77,6 +88,23 @@ def login(data: LoginRequest):
 def get_all_data(authorization: Optional[str] = Header(None)):
     require_admin(authorization)
     return utils.load_data()
+
+
+@router.get("/theme")
+def get_theme():
+    return utils.load_data().get("theme", utils.DEFAULT_THEME)
+
+
+@router.put("/admin/theme")
+def update_theme(payload: ThemeUpdate, authorization: Optional[str] = Header(None)):
+    require_admin(authorization)
+    data = utils.load_data()
+    theme = data.get("theme", utils.DEFAULT_THEME).copy()
+    for k, v in payload.dict(exclude_unset=True).items():
+        theme[k] = v
+    data["theme"] = theme
+    utils.save_data(data)
+    return {"success": True, "theme": theme}
 
 
 @router.put("/admin/profile")

@@ -18,14 +18,14 @@ export default function Experience() {
   }, []);
 
   return (
-    <section className="bg-black text-white py-24 px-6">
+    <section className="theme-section py-24 px-6">
       <div className="max-w-5xl mx-auto">
 
         <h2 className="text-5xl font-bold text-center mb-20">
           Experience
         </h2>
 
-        <div className="relative border-l border-zinc-700 ml-4">
+        <div className="relative border-l ml-4" style={{ borderColor: 'var(--site-muted)' }}>
 
           {experience.map((item, index) => (
             <div
@@ -33,21 +33,21 @@ export default function Experience() {
               className="mb-16 ml-10 relative"
             >
 
-              <div className="absolute -left-[50px] top-2 w-5 h-5 rounded-full bg-white"></div>
+              <div className="absolute -left-[50px] top-2 w-5 h-5 rounded-full" style={{ background: 'var(--site-accent)' }}></div>
 
               <h3 className="text-2xl font-bold">
                 {item.role}
               </h3>
 
-              <p className="text-xl text-gray-400 mt-1">
+              <p className="text-xl theme-muted mt-1">
                 {item.company}
               </p>
 
-              <p className="text-sm text-gray-500 mt-2 mb-4">
+              <p className="text-sm theme-muted mt-2 mb-4">
                 {item.duration}
               </p>
 
-              <p className="text-gray-400 leading-relaxed">
+              <p className="theme-muted leading-relaxed">
                 {item.description}
               </p>
 

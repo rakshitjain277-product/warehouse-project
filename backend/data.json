@@ -92,5 +92,15 @@
     "Machine Learning",
     "AI Vibe Coding"
   ],
+  "theme": {
+    "backgroundColor": "#000000",
+    "sectionColor": "#09090b",
+    "surfaceColor": "#18181b",
+    "textColor": "#ffffff",
+    "mutedTextColor": "#a1a1aa",
+    "accentColor": "#ffffff",
+    "fontFamily": "Inter, Arial, sans-serif",
+    "buttonRadius": "12"
+  },
   "contacts": []
 }
