@@ -34,9 +34,19 @@ function App() {
         .catch((err) => console.error(err));
     }
 
+    function applyTheme(event) {
+      if (event.detail?.theme) {
+        setTheme({ ...defaultTheme, ...event.detail.theme });
+      }
+    }
+
     fetchTheme();
     window.addEventListener('portfolio-data-updated', fetchTheme);
-    return () => window.removeEventListener('portfolio-data-updated', fetchTheme);
+    window.addEventListener('portfolio-theme-updated', applyTheme);
+    return () => {
+      window.removeEventListener('portfolio-data-updated', fetchTheme);
+      window.removeEventListener('portfolio-theme-updated', applyTheme);
+    };
   }, []);
 
   const themeStyle = {

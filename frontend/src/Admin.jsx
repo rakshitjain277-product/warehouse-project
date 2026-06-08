@@ -32,6 +32,12 @@ export default function Admin({ onClose }) {
     reader.readAsDataURL(file);
   }
 
+  function updateThemeField(field, value) {
+    const nextTheme = { ...theme, [field]: value };
+    setTheme(nextTheme);
+    window.dispatchEvent(new CustomEvent('portfolio-theme-updated', { detail: { theme: nextTheme } }));
+  }
+
   async function login(e) {
     e.preventDefault();
     setMessage('');
@@ -77,12 +83,15 @@ export default function Admin({ onClose }) {
   async function saveTheme(e) {
     e.preventDefault();
     try {
-      await requestJson(`${API_URL}/admin/theme`, {
+      const result = await requestJson(`${API_URL}/admin/theme`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(theme)
       });
+      const savedTheme = result.theme || theme;
+      setTheme(savedTheme);
       setMessage('Theme saved.');
+      window.dispatchEvent(new CustomEvent('portfolio-theme-updated', { detail: { theme: savedTheme } }));
       window.dispatchEvent(new Event('portfolio-data-updated'));
       fetchData();
     } catch (err) {
@@ -233,30 +242,30 @@ export default function Admin({ onClose }) {
                 <div className="grid md:grid-cols-3 gap-3">
                   <label className="space-y-1 text-sm">
                     <span>Background</span>
-                    <input className="w-full h-11 border" type="color" value={theme.backgroundColor || '#000000'} onChange={e => setTheme({ ...theme, backgroundColor: e.target.value })} />
+                    <input className="w-full h-11 border" type="color" value={theme.backgroundColor || '#000000'} onChange={e => updateThemeField('backgroundColor', e.target.value)} />
                   </label>
                   <label className="space-y-1 text-sm">
                     <span>Section</span>
-                    <input className="w-full h-11 border" type="color" value={theme.sectionColor || '#09090b'} onChange={e => setTheme({ ...theme, sectionColor: e.target.value })} />
+                    <input className="w-full h-11 border" type="color" value={theme.sectionColor || '#09090b'} onChange={e => updateThemeField('sectionColor', e.target.value)} />
                   </label>
                   <label className="space-y-1 text-sm">
                     <span>Cards</span>
-                    <input className="w-full h-11 border" type="color" value={theme.surfaceColor || '#18181b'} onChange={e => setTheme({ ...theme, surfaceColor: e.target.value })} />
+                    <input className="w-full h-11 border" type="color" value={theme.surfaceColor || '#18181b'} onChange={e => updateThemeField('surfaceColor', e.target.value)} />
                   </label>
                   <label className="space-y-1 text-sm">
                     <span>Text</span>
-                    <input className="w-full h-11 border" type="color" value={theme.textColor || '#ffffff'} onChange={e => setTheme({ ...theme, textColor: e.target.value })} />
+                    <input className="w-full h-11 border" type="color" value={theme.textColor || '#ffffff'} onChange={e => updateThemeField('textColor', e.target.value)} />
                   </label>
                   <label className="space-y-1 text-sm">
                     <span>Muted Text</span>
-                    <input className="w-full h-11 border" type="color" value={theme.mutedTextColor || '#a1a1aa'} onChange={e => setTheme({ ...theme, mutedTextColor: e.target.value })} />
+                    <input className="w-full h-11 border" type="color" value={theme.mutedTextColor || '#a1a1aa'} onChange={e => updateThemeField('mutedTextColor', e.target.value)} />
                   </label>
                   <label className="space-y-1 text-sm">
                     <span>Accent</span>
-                    <input className="w-full h-11 border" type="color" value={theme.accentColor || '#ffffff'} onChange={e => setTheme({ ...theme, accentColor: e.target.value })} />
+                    <input className="w-full h-11 border" type="color" value={theme.accentColor || '#ffffff'} onChange={e => updateThemeField('accentColor', e.target.value)} />
                   </label>
                 </div>
-                <select className="w-full p-2 border" value={theme.fontFamily || 'Inter, Arial, sans-serif'} onChange={e => setTheme({ ...theme, fontFamily: e.target.value })}>
+                <select className="w-full p-2 border" value={theme.fontFamily || 'Inter, Arial, sans-serif'} onChange={e => updateThemeField('fontFamily', e.target.value)}>
                   <option value="Inter, Arial, sans-serif">Inter / Arial</option>
                   <option value="Georgia, serif">Georgia</option>
                   <option value="'Times New Roman', serif">Times New Roman</option>
@@ -265,7 +274,7 @@ export default function Admin({ onClose }) {
                 </select>
                 <label className="block text-sm">
                   <span>Button Radius: {theme.buttonRadius || '12'}px</span>
-                  <input className="w-full" type="range" min="0" max="28" value={theme.buttonRadius || '12'} onChange={e => setTheme({ ...theme, buttonRadius: e.target.value })} />
+                  <input className="w-full" type="range" min="0" max="28" value={theme.buttonRadius || '12'} onChange={e => updateThemeField('buttonRadius', e.target.value)} />
                 </label>
                 <div>
                   <button type="submit" className="px-3 py-1 border rounded bg-blue-600 text-white">Save Theme</button>
