@@ -1,3 +1,5 @@
+import utils
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -24,6 +26,11 @@ app.include_router(contact_router)
 app.include_router(experience_router)
 app.include_router(skills_router)
 app.include_router(admin_router)
+
+@app.get("/theme")
+def get_theme():
+    data = utils.load_data()
+    return data.get("theme", utils.DEFAULT_THEME)
 
 @app.get("/")
 def root():
