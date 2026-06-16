@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { API_URL } from './config';
 
 export default function Admin({ onClose }) {
@@ -13,6 +13,10 @@ export default function Admin({ onClose }) {
   const [newSkill, setNewSkill] = useState('');
   const [message, setMessage] = useState('');
   const skills = profile.skills || data?.skills || [];
+
+  // Always keep a ref to the latest data so Save buttons read fresh state
+  const dataRef = useRef(null);
+  useEffect(() => { dataRef.current = data; }, [data]);
 
   async function requestJson(url, options = {}) {
     const res = await fetch(url, options);
@@ -430,7 +434,13 @@ export default function Admin({ onClose }) {
                     }} placeholder="External link (optional)" />
                     <div>
                       <label className="text-sm font-medium block mb-1">Project Image</label>
-                      <input className="w-full p-2 border" type="file" accept="image/*" onChange={e => readProjectImageFileForEdit(e.target.files?.[0], index)} />
+                      <input className="w-full p-2 border" type="file" accept="image/*" onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (file && file.size > 400000) {
+                          setMessage('Warning: Image is large (' + Math.round(file.size / 1024) + 'KB). Consider compressing it below 400KB to ensure it saves correctly on the server.');
+                        }
+                        readProjectImageFileForEdit(file, index);
+                      }} />
                       {p.image && <img src={p.image} alt="Preview" className="mt-1 h-24 object-cover rounded border" />}
                     </div>
                     <div>
@@ -441,7 +451,10 @@ export default function Admin({ onClose }) {
                       }} placeholder="Detailed write-up about the project..." />
                     </div>
                     <div className="flex gap-2">
-                      <button type="button" onClick={() => updateProject(p.id, p)} className="px-3 py-1 border rounded bg-blue-600 text-white">Save</button>
+                      <button type="button" onClick={() => {
+                        const latest = (dataRef.current?.projects || data?.projects || []).find(proj => proj.id === p.id);
+                        updateProject(p.id, latest || p);
+                      }} className="px-3 py-1 border rounded bg-blue-600 text-white">Save</button>
                       <button type="button" onClick={() => deleteProject(p.id)} className="px-3 py-1 border rounded">Delete</button>
                     </div>
                   </div>

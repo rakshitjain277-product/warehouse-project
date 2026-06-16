@@ -103,7 +103,7 @@ def update_theme(payload: ThemeUpdate, authorization: Optional[str] = Header(Non
     require_admin(authorization)
     data = utils.load_data()
     theme = data.get("theme", utils.DEFAULT_THEME).copy()
-    for k, v in payload.dict(exclude_unset=True).items():
+    for k, v in payload.model_dump(exclude_unset=True).items():
         theme[k] = v
     data["theme"] = theme
     utils.save_data(data)
@@ -115,7 +115,7 @@ def update_profile(payload: ProfileUpdate, authorization: Optional[str] = Header
     require_admin(authorization)
     data = utils.load_data()
     profile = data.get("profile", {})
-    for k, v in payload.dict(exclude_unset=True).items():
+    for k, v in payload.model_dump(exclude_unset=True).items():
         if k == "skills":
             data["skills"] = v
         elif k == "theme":
@@ -132,7 +132,7 @@ def add_project(project: Project, authorization: Optional[str] = Header(None)):
     require_admin(authorization)
     data = utils.load_data()
     projects = data.get("projects", [])
-    proj = project.dict()
+    proj = project.model_dump()
     proj["id"] = uuid.uuid4().hex
     projects.append(proj)
     data["projects"] = projects
@@ -147,7 +147,8 @@ def edit_project(project_id: str, project: Project, authorization: Optional[str]
     projects = data.get("projects", [])
     for p in projects:
         if p.get("id") == project_id:
-            p.update(project.dict())
+            # exclude_none=True prevents null values from overwriting existing data
+            p.update({k: v for k, v in project.model_dump().items() if v is not None})
             utils.save_data(data)
             return {"success": True, "project": p}
     raise HTTPException(status_code=404, detail="Project not found")
@@ -171,7 +172,7 @@ def add_experience(experience: Experience, authorization: Optional[str] = Header
     require_admin(authorization)
     data = utils.load_data()
     entries = data.get("experience", [])
-    entry = experience.dict()
+    entry = experience.model_dump()
     entry["id"] = uuid.uuid4().hex
     entries.append(entry)
     data["experience"] = entries
@@ -186,7 +187,7 @@ def edit_experience(experience_id: str, experience: Experience, authorization: O
     entries = data.get("experience", [])
     for entry in entries:
         if entry.get("id") == experience_id:
-            entry.update(experience.dict())
+            entry.update(experience.model_dump())
             utils.save_data(data)
             return {"success": True, "experience": entry}
     raise HTTPException(status_code=404, detail="Experience not found")
