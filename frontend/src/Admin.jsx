@@ -8,7 +8,7 @@ export default function Admin({ onClose }) {
   const [data, setData] = useState(null);
   const [profile, setProfile] = useState({});
   const [theme, setTheme] = useState({});
-  const [project, setProject] = useState({ title: '', description: '', tech: [], link: '' });
+  const [project, setProject] = useState({ title: '', description: '', tech: [], link: '', image: '', writeup: '' });
   const [experience, setExperience] = useState({ company: '', role: '', duration: '', description: '' });
   const [newSkill, setNewSkill] = useState('');
   const [message, setMessage] = useState('');
@@ -30,6 +30,29 @@ export default function Admin({ onClose }) {
     const reader = new FileReader();
     reader.onload = () => {
       setProfile(currentProfile => ({ ...currentProfile, [field]: reader.result }));
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function readProjectImageFile(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setProject(p => ({ ...p, image: reader.result }));
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function readProjectImageFileForEdit(file, index) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const image = reader.result;
+      setData(prev => {
+        const next = [...prev.projects];
+        next[index] = { ...next[index], image };
+        return { ...prev, projects: next };
+      });
     };
     reader.readAsDataURL(file);
   }
@@ -117,9 +140,24 @@ export default function Admin({ onClose }) {
     e.preventDefault();
     const body = { ...project, tech: project.tech.filter(Boolean) };
     await fetch(`${API_URL}/admin/projects`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
-    setProject({ title: '', description: '', tech: [], link: '' });
+    setProject({ title: '', description: '', tech: [], link: '', image: '', writeup: '' });
     window.dispatchEvent(new Event('portfolio-data-updated'));
     fetchData();
+  }
+
+  async function updateProject(id, proj) {
+    try {
+      await requestJson(`${API_URL}/admin/projects/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(proj)
+      });
+      setMessage('Project saved.');
+      window.dispatchEvent(new Event('portfolio-data-updated'));
+      fetchData();
+    } catch (err) {
+      setMessage(`Project save failed: ${err.message}`);
+    }
   }
 
   async function deleteProject(id) {
@@ -351,23 +389,60 @@ export default function Admin({ onClose }) {
               <h3 className="font-bold">Projects</h3>
               <form onSubmit={addProject} className="mt-2 space-y-2">
                 <input className="w-full p-2 border" value={project.title} onChange={e => setProject({ ...project, title: e.target.value })} placeholder="Title" required />
-                <textarea className="w-full p-2 border" value={project.description} onChange={e => setProject({ ...project, description: e.target.value })} placeholder="Description" required />
+                <textarea className="w-full p-2 border" value={project.description} onChange={e => setProject({ ...project, description: e.target.value })} placeholder="Short description (shown on card)" required />
                 <input className="w-full p-2 border" value={project.tech.join(',')} onChange={e => setProject({ ...project, tech: e.target.value.split(',').map(t => t.trim()).filter(Boolean) })} placeholder="Tech (comma separated)" />
-                <input className="w-full p-2 border" value={project.link} onChange={e => setProject({ ...project, link: e.target.value })} placeholder="Link" />
+                <input className="w-full p-2 border" value={project.link} onChange={e => setProject({ ...project, link: e.target.value })} placeholder="External link (optional)" />
+                <div>
+                  <label className="text-sm font-medium block mb-1">Project Image</label>
+                  <input className="w-full p-2 border" type="file" accept="image/*" onChange={e => readProjectImageFile(e.target.files?.[0])} />
+                  {project.image && <img src={project.image} alt="Preview" className="mt-1 h-24 object-cover rounded border" />}
+                </div>
+                <div>
+                  <label className="text-sm font-medium block mb-1">Write-up (shown in popup)</label>
+                  <textarea className="w-full p-2 border" rows={4} value={project.writeup} onChange={e => setProject({ ...project, writeup: e.target.value })} placeholder="Detailed write-up about the project..." />
+                </div>
                 <div>
                   <button type="submit" className="px-3 py-1 border rounded bg-blue-600 text-white">Add Project</button>
                 </div>
               </form>
 
-              <div className="mt-3">
-                {(data.projects || []).map(p => (
-                  <div key={p.id} className="border p-2 my-2 flex justify-between">
+              <div className="mt-3 space-y-3">
+                {(data.projects || []).map((p, index) => (
+                  <div
+                    key={p.id}
+                    className="border p-3 space-y-2"
+                  >
+                    <input className="w-full p-2 border" value={p.title || ''} onChange={e => {
+                      const val = e.target.value;
+                      setData(prev => { const next = [...prev.projects]; next[index] = { ...next[index], title: val }; return { ...prev, projects: next }; });
+                    }} placeholder="Title" />
+                    <textarea className="w-full p-2 border" value={p.description || ''} onChange={e => {
+                      const val = e.target.value;
+                      setData(prev => { const next = [...prev.projects]; next[index] = { ...next[index], description: val }; return { ...prev, projects: next }; });
+                    }} placeholder="Short description" />
+                    <input className="w-full p-2 border" value={(p.tech || []).join(',')} onChange={e => {
+                      const val = e.target.value.split(',').map(t => t.trim()).filter(Boolean);
+                      setData(prev => { const next = [...prev.projects]; next[index] = { ...next[index], tech: val }; return { ...prev, projects: next }; });
+                    }} placeholder="Tech (comma separated)" />
+                    <input className="w-full p-2 border" value={p.link || ''} onChange={e => {
+                      const val = e.target.value;
+                      setData(prev => { const next = [...prev.projects]; next[index] = { ...next[index], link: val }; return { ...prev, projects: next }; });
+                    }} placeholder="External link (optional)" />
                     <div>
-                      <div className="font-bold">{p.title}</div>
-                      <div className="text-sm">{p.description}</div>
+                      <label className="text-sm font-medium block mb-1">Project Image</label>
+                      <input className="w-full p-2 border" type="file" accept="image/*" onChange={e => readProjectImageFileForEdit(e.target.files?.[0], index)} />
+                      {p.image && <img src={p.image} alt="Preview" className="mt-1 h-24 object-cover rounded border" />}
                     </div>
                     <div>
-                      <button onClick={() => deleteProject(p.id)} className="px-2 py-1 border rounded">Delete</button>
+                      <label className="text-sm font-medium block mb-1">Write-up (shown in popup)</label>
+                      <textarea className="w-full p-2 border" rows={4} value={p.writeup || ''} onChange={e => {
+                        const val = e.target.value;
+                        setData(prev => { const next = [...prev.projects]; next[index] = { ...next[index], writeup: val }; return { ...prev, projects: next }; });
+                      }} placeholder="Detailed write-up about the project..." />
+                    </div>
+                    <div className="flex gap-2">
+                      <button type="button" onClick={() => updateProject(p.id, p)} className="px-3 py-1 border rounded bg-blue-600 text-white">Save</button>
+                      <button type="button" onClick={() => deleteProject(p.id)} className="px-3 py-1 border rounded">Delete</button>
                     </div>
                   </div>
                 ))}

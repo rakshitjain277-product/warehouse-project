@@ -42,7 +42,9 @@ class Project(BaseModel):
     title: str
     description: str
     tech: list
-    link: Optional[str]
+    link: Optional[str] = None
+    image: Optional[str] = None
+    writeup: Optional[str] = None
 
 
 class Experience(BaseModel):
