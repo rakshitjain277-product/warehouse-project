@@ -10,6 +10,7 @@ export default function ParallaxBackground() {
   const mouseTarget = useRef({ x: 0, y: 0 });
   const mouseSmooth = useRef({ x: 0, y: 0 });
   const durationRef = useRef(0);
+  const videoReadyRef = useRef(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -24,6 +25,31 @@ export default function ParallaxBackground() {
     const updateDuration = () => {
       if (video?.duration && Number.isFinite(video.duration)) {
         durationRef.current = video.duration;
+      }
+      if (video && video.readyState >= 2) {
+        videoReadyRef.current = true;
+      }
+    };
+
+    const warmVideo = () => {
+      if (!video) return;
+      video.muted = true;
+      video.defaultMuted = true;
+      video.setAttribute('muted', '');
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', '');
+      video.load();
+
+      const playPromise = video.play();
+      if (playPromise?.then) {
+        playPromise
+          .then(() => {
+            video.pause();
+            updateDuration();
+          })
+          .catch(() => {
+            updateDuration();
+          });
       }
     };
 
@@ -46,7 +72,7 @@ export default function ParallaxBackground() {
 
       if (video) {
         const duration = durationRef.current;
-        if (duration > 0) {
+        if (duration > 0 && videoReadyRef.current) {
           const targetTime = Math.min(duration - 0.05, Math.max(0, progress * duration));
           if (Math.abs(video.currentTime - targetTime) > 0.04) {
             video.currentTime = targetTime;
@@ -75,24 +101,29 @@ export default function ParallaxBackground() {
     updateDuration();
 
     if (video) {
-      video.pause();
-      video.currentTime = 0;
       video.addEventListener('loadedmetadata', updateDuration);
+      video.addEventListener('loadeddata', updateDuration);
+      video.addEventListener('canplay', updateDuration);
       video.addEventListener('durationchange', updateDuration);
+      warmVideo();
     }
 
     window.addEventListener('scroll', updateScrollTarget, { passive: true });
     window.addEventListener('resize', updateScrollTarget);
+    window.addEventListener('touchstart', warmVideo, { passive: true, once: true });
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
     rafRef.current = requestAnimationFrame(tick);
 
     return () => {
       if (video) {
         video.removeEventListener('loadedmetadata', updateDuration);
+        video.removeEventListener('loadeddata', updateDuration);
+        video.removeEventListener('canplay', updateDuration);
         video.removeEventListener('durationchange', updateDuration);
       }
       window.removeEventListener('scroll', updateScrollTarget);
       window.removeEventListener('resize', updateScrollTarget);
+      window.removeEventListener('touchstart', warmVideo);
       window.removeEventListener('pointermove', handlePointerMove);
       cancelAnimationFrame(rafRef.current);
     };
@@ -109,6 +140,8 @@ export default function ParallaxBackground() {
         ref={videoRef}
         className="absolute inset-0 h-full w-full object-cover"
         src="/skydive.mp4"
+        autoPlay
+        loop
         muted
         playsInline
         preload="auto"
