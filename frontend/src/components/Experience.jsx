@@ -1,6 +1,66 @@
 import { useEffect, useState } from "react";
 import { API_URL } from "../config";
 
+function renderInlineFormatting(text) {
+  const parts = String(text || "").split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+
+  return parts.map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={index} className="font-semibold text-current">{part.slice(2, -2)}</strong>;
+    }
+
+    if (part.startsWith("*") && part.endsWith("*")) {
+      return <em key={index}>{part.slice(1, -1)}</em>;
+    }
+
+    return <span key={index}>{part}</span>;
+  });
+}
+
+function FormattedDescription({ text }) {
+  const lines = String(text || "").split(/\r?\n/);
+  const blocks = [];
+  let bulletItems = [];
+
+  function flushBullets() {
+    if (!bulletItems.length) return;
+    blocks.push(
+      <ul key={`ul-${blocks.length}`} className="list-disc pl-5 space-y-1">
+        {bulletItems.map((item, index) => (
+          <li key={index}>{renderInlineFormatting(item)}</li>
+        ))}
+      </ul>
+    );
+    bulletItems = [];
+  }
+
+  lines.forEach((line, index) => {
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      flushBullets();
+      blocks.push(<div key={`space-${index}`} className="h-2" />);
+      return;
+    }
+
+    if (trimmed.startsWith("- ")) {
+      bulletItems.push(trimmed.slice(2));
+      return;
+    }
+
+    flushBullets();
+    blocks.push(
+      <p key={`p-${index}`}>
+        {renderInlineFormatting(line)}
+      </p>
+    );
+  });
+
+  flushBullets();
+
+  return <div className="theme-muted text-sm leading-relaxed space-y-2">{blocks}</div>;
+}
+
 export default function Experience() {
   const [experience, setExperience] = useState([]);
 
@@ -81,7 +141,7 @@ export default function Experience() {
                     {item.duration}
                   </span>
                 </div>
-                <p className="theme-muted text-sm leading-relaxed">{item.description}</p>
+                <FormattedDescription text={item.description} />
               </div>
             </div>
           ))}

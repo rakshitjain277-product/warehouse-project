@@ -1,6 +1,133 @@
 import { useState, useRef, useEffect } from 'react';
 import { API_URL } from './config';
 
+function insertFormatting(textarea, value, onChange, format) {
+  const start = textarea?.selectionStart ?? value.length;
+  const end = textarea?.selectionEnd ?? value.length;
+  const selected = value.slice(start, end);
+  let nextValue = value;
+  let nextStart = start;
+  let nextEnd = end;
+
+  if (format === 'bold') {
+    const fallback = selected || 'bold text';
+    nextValue = `${value.slice(0, start)}**${fallback}**${value.slice(end)}`;
+    nextStart = start + 2;
+    nextEnd = nextStart + fallback.length;
+  }
+
+  if (format === 'italic') {
+    const fallback = selected || 'italic text';
+    nextValue = `${value.slice(0, start)}*${fallback}*${value.slice(end)}`;
+    nextStart = start + 1;
+    nextEnd = nextStart + fallback.length;
+  }
+
+  if (format === 'bullet') {
+    const lineStart = value.lastIndexOf('\n', Math.max(0, start - 1)) + 1;
+    const prefix = value.slice(lineStart, lineStart + 2) === '- ' ? '' : '- ';
+    nextValue = `${value.slice(0, lineStart)}${prefix}${value.slice(lineStart)}`;
+    nextStart = start + prefix.length;
+    nextEnd = end + prefix.length;
+  }
+
+  if (format === 'line') {
+    nextValue = `${value.slice(0, start)}\n${value.slice(end)}`;
+    nextStart = start + 1;
+    nextEnd = nextStart;
+  }
+
+  onChange(nextValue);
+  window.requestAnimationFrame(() => {
+    textarea?.focus();
+    textarea?.setSelectionRange(nextStart, nextEnd);
+  });
+}
+
+function DescriptionToolbar({ value, onChange, textareaRef }) {
+  const tools = [
+    { format: 'bold', label: 'B', title: 'Bold (**text**)', style: 'font-extrabold' },
+    { format: 'italic', label: 'I', title: 'Italic (*text*)', style: 'italic' },
+    { format: 'bullet', label: '•', title: 'Bullet point (- item)', style: '' },
+    { format: 'line', label: '↵', title: 'Insert new line', style: '' },
+  ];
+
+  return (
+    <div className="flex items-center gap-1 border border-b-0 bg-zinc-100 px-2 py-1.5 rounded-t">
+      <span className="text-xs text-zinc-500 mr-1 select-none">Format:</span>
+      {tools.map(tool => (
+        <button
+          key={tool.format}
+          type="button"
+          title={tool.title}
+          aria-label={tool.title}
+          onClick={() => {
+            const textarea = typeof textareaRef === 'function' ? textareaRef() : textareaRef.current;
+            insertFormatting(textarea, value, onChange, tool.format);
+          }}
+          className={`h-7 min-w-7 px-2 border border-zinc-300 rounded bg-white text-sm hover:bg-blue-50 hover:border-blue-400 transition-colors ${tool.style}`}
+        >
+          {tool.label}
+        </button>
+      ))}
+      <span className="text-xs text-zinc-400 ml-2 select-none hidden sm:inline">**bold** &nbsp;*italic* &nbsp;- bullet</span>
+    </div>
+  );
+}
+
+function DescriptionPreview({ value }) {
+  if (!value) return null;
+  const lines = String(value).split(/\r?\n/);
+  const blocks = [];
+  let bullets = [];
+
+  function flushBullets() {
+    if (!bullets.length) return;
+    blocks.push(
+      <ul key={`ul-${blocks.length}`} className="list-disc pl-4 space-y-0.5">
+        {bullets.map((item, i) => {
+          const parts = item.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+          return (
+            <li key={i}>
+              {parts.map((p, j) =>
+                p.startsWith('**') && p.endsWith('**') ? <strong key={j}>{p.slice(2, -2)}</strong>
+                  : p.startsWith('*') && p.endsWith('*') ? <em key={j}>{p.slice(1, -1)}</em>
+                  : <span key={j}>{p}</span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    );
+    bullets = [];
+  }
+
+  lines.forEach((line, i) => {
+    const trimmed = line.trim();
+    if (!trimmed) { flushBullets(); blocks.push(<div key={`sp-${i}`} className="h-1" />); return; }
+    if (trimmed.startsWith('- ')) { bullets.push(trimmed.slice(2)); return; }
+    flushBullets();
+    const parts = line.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+    blocks.push(
+      <p key={`p-${i}`}>
+        {parts.map((p, j) =>
+          p.startsWith('**') && p.endsWith('**') ? <strong key={j}>{p.slice(2, -2)}</strong>
+            : p.startsWith('*') && p.endsWith('*') ? <em key={j}>{p.slice(1, -1)}</em>
+            : <span key={j}>{p}</span>
+        )}
+      </p>
+    );
+  });
+  flushBullets();
+
+  return (
+    <div className="border border-t-0 bg-zinc-50 px-3 py-2 text-sm text-zinc-700 space-y-1 rounded-b">
+      <p className="text-xs text-zinc-400 mb-1">Preview</p>
+      {blocks}
+    </div>
+  );
+}
+
 export default function Admin({ onClose }) {
   const [token, setToken] = useState(null);
   const [loginUser, setLoginUser] = useState('');
@@ -16,6 +143,8 @@ export default function Admin({ onClose }) {
 
   // Always keep a ref to the latest data so Save buttons read fresh state
   const dataRef = useRef(null);
+  const newExperienceDescriptionRef = useRef(null);
+  const experienceDescriptionRefs = useRef({});
   useEffect(() => { dataRef.current = data; }, [data]);
 
   async function requestJson(url, options = {}) {
@@ -344,7 +473,23 @@ export default function Admin({ onClose }) {
                 <input className="w-full p-2 border" value={experience.role} onChange={e => setExperience({ ...experience, role: e.target.value })} placeholder="Role" required />
                 <input className="w-full p-2 border" value={experience.company} onChange={e => setExperience({ ...experience, company: e.target.value })} placeholder="Company" required />
                 <input className="w-full p-2 border" value={experience.duration} onChange={e => setExperience({ ...experience, duration: e.target.value })} placeholder="Duration" required />
-                <textarea className="w-full p-2 border" value={experience.description} onChange={e => setExperience({ ...experience, description: e.target.value })} placeholder="Description" required />
+                <div>
+                  <DescriptionToolbar
+                    value={experience.description}
+                    onChange={description => setExperience({ ...experience, description })}
+                    textareaRef={newExperienceDescriptionRef}
+                  />
+                  <textarea
+                    ref={newExperienceDescriptionRef}
+                    className="w-full p-2 border border-b-0"
+                    rows={5}
+                    value={experience.description}
+                    onChange={e => setExperience({ ...experience, description: e.target.value })}
+                    placeholder="Description — use **bold**, *italic*, - bullet"
+                    required
+                  />
+                  <DescriptionPreview value={experience.description} />
+                </div>
                 <div>
                   <button type="submit" className="px-3 py-1 border rounded bg-blue-600 text-white">Add Experience</button>
                 </div>
@@ -375,11 +520,33 @@ export default function Admin({ onClose }) {
                       nextExperience[index] = { ...item, duration: e.target.value };
                       setData({ ...data, experience: nextExperience });
                     }} placeholder="Duration" required />
-                    <textarea className="w-full p-2 border" value={item.description || ''} onChange={e => {
-                      const nextExperience = [...(data.experience || [])];
-                      nextExperience[index] = { ...item, description: e.target.value };
-                      setData({ ...data, experience: nextExperience });
-                    }} placeholder="Description" required />
+                    <div>
+                      <DescriptionToolbar
+                        value={item.description || ''}
+                        onChange={description => {
+                          const nextExperience = [...(data.experience || [])];
+                          nextExperience[index] = { ...item, description };
+                          setData({ ...data, experience: nextExperience });
+                        }}
+                        textareaRef={() => experienceDescriptionRefs.current[item.id || index]}
+                      />
+                      <textarea
+                        ref={node => {
+                          experienceDescriptionRefs.current[item.id || index] = node;
+                        }}
+                        className="w-full p-2 border border-b-0"
+                        rows={5}
+                        value={item.description || ''}
+                        onChange={e => {
+                          const nextExperience = [...(data.experience || [])];
+                          nextExperience[index] = { ...item, description: e.target.value };
+                          setData({ ...data, experience: nextExperience });
+                        }}
+                        placeholder="Description — use **bold**, *italic*, - bullet"
+                        required
+                      />
+                      <DescriptionPreview value={item.description} />
+                    </div>
                     <div className="flex gap-2">
                       <button type="submit" className="px-3 py-1 border rounded bg-blue-600 text-white">Save</button>
                       <button type="button" onClick={() => deleteExperience(item.id)} className="px-3 py-1 border rounded">Delete</button>

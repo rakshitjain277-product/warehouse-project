@@ -23,38 +23,60 @@
   "projects": [
     {
       "title": "JAWA",
-      "description": "Jawa WMS Implementation",
-      "tech": [],
+      "description": "End-to-end WMS implementation across multi-site warehouse operations, driving inventory accuracy and throughput improvements.",
+      "tech": ["WMS", "SAP EWM", "Barcode Scanning", "IoT", "Supply Chain", "Process Design"],
       "link": "",
-      "id": "4504674857174fc4b97e44e8335afc22"
+      "id": "4504674857174fc4b97e44e8335afc22",
+      "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc4MDAnIGhlaWdodD0nNDAwJz48cmVjdCB3aWR0aD0nODAwJyBoZWlnaHQ9JzQwMCcgZmlsbD0nIzFhNGEyZScvPjx0ZXh0IHg9JzQwMCcgeT0nMjAwJyBmb250LWZhbWlseT0nQXJpYWwnIGZvbnQtc2l6ZT0nMzYnIGZvbnQtd2VpZ2h0PSdib2xkJyBmaWxsPSd3aGl0ZScgdGV4dC1hbmNob3I9J21pZGRsZScgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZSc+SkFXQSAtIFdNUyBJbXBsZW1lbnRhdGlvbjwvdGV4dD48L3N2Zz4=",
+      "writeup": "JAWA is a full-scale Warehouse Management System implementation project spanning multiple distribution centres. The goal was to replace manual, paper-based processes with a digitised, real-time inventory tracking system.\n\nKey outcomes:\n• Reduced inventory discrepancy from 4.2% to 0.3% within 3 months of go-live\n• Improved pick-pack-ship cycle time by 38% through optimised put-away and wave planning logic\n• Integrated barcode scanning and IoT weight sensors at inbound docks for automated GRN creation\n• Designed custom exception workflows for damaged goods, short shipments and quarantine holds\n\nI led the product side — defining business requirements, coordinating with the WMS vendor, running UAT, and managing the change management programme with warehouse staff."
     },
     {
       "title": "VisionWare",
-      "description": "3D Warehouse Analytics",
-      "tech": [],
+      "description": "Interactive 3D warehouse layout analytics platform for real-time slotting optimisation and space utilisation visibility.",
+      "tech": [
+        "Three.js",
+        "React",
+        "Python",
+        "FastAPI",
+        "Data Analytics",
+        "3D Visualisation"
+      ],
       "link": "",
-      "id": "18fb9572b8c84c3685cb4cc0a5145b8a"
+      "id": "18fb9572b8c84c3685cb4cc0a5145b8a",
+      "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc4MDAnIGhlaWdodD0nNDAwJz48cmVjdCB3aWR0aD0nODAwJyBoZWlnaHQ9JzQwMCcgZmlsbD0nIzFhMmE0YScvPjx0ZXh0IHg9JzQwMCcgeT0nMjAwJyBmb250LWZhbWlseT0nQXJpYWwnIGZvbnQtc2l6ZT0nMzYnIGZvbnQtd2VpZ2h0PSdib2xkJyBmaWxsPSd3aGl0ZScgdGV4dC1hbmNob3I9J21pZGRsZScgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZSc+VmlzaW9uV2FyZSBBbmFseXRpY3M8L3RleHQ+PC9zdmc+",
+      "writeup": "VisionWare is an in-house analytics tool that renders a warehouse's physical layout in an interactive 3D view, overlaid with live data from the WMS.\n\nWhat it does:\n\u2022 Visualises bin-level occupancy, velocity class, and pick frequency on a 3D floor plan\n\u2022 Flags slotting inefficiencies \u2014 high-velocity SKUs stored far from despatch, dead stock occupying prime locations\n\u2022 Simulates proposed slotting changes and projects the impact on travel distance before committing\n\u2022 Exports heat maps and PDF reports for operations review meetings\n\nBuilt with Three.js on the frontend and a FastAPI backend that pipes data from the WMS database. I defined the product requirements and worked directly with one developer to ship an MVP in 6 weeks."
     },
     {
-      "title": "Test Project",
-      "description": "Testing",
+      "title": "Apollo Control Tower",
+      "description": "Real-time supply chain visibility dashboard aggregating shipment, inventory and carrier data across the network.",
       "tech": [
-        "Node",
-        "React"
+        "React",
+        "Python",
+        "AWS",
+        "REST APIs",
+        "TMS",
+        "AI Alerts"
       ],
-      "link": "https://test.com",
-      "id": "c601f39772d94ce3b5fad80c7ebbed48"
+      "link": "",
+      "id": "c601f39772d94ce3b5fad80c7ebbed48",
+      "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc4MDAnIGhlaWdodD0nNDAwJz48cmVjdCB3aWR0aD0nODAwJyBoZWlnaHQ9JzQwMCcgZmlsbD0nIzJhMWE0YScvPjx0ZXh0IHg9JzQwMCcgeT0nMjAwJyBmb250LWZhbWlseT0nQXJpYWwnIGZvbnQtc2l6ZT0nMzYnIGZvbnQtd2VpZ2h0PSdib2xkJyBmaWxsPSd3aGl0ZScgdGV4dC1hbmNob3I9J21pZGRsZScgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZSc+QXBvbGxvIENvbnRyb2wgVG93ZXI8L3RleHQ+PC9zdmc+",
+      "writeup": "Apollo Control Tower is an internal visibility platform built to give the operations and planning teams a single pane of glass across inbound, outbound and inter-branch shipments.\n\nCore features:\n\u2022 Live shipment tracking with ETA predictions using carrier API integrations\n\u2022 Automated exception alerts for delayed shipments, SLA breaches and carrier non-performance\n\u2022 Inventory-in-transit view reconciled against purchase orders and sales orders\n\u2022 AI-powered delay risk scoring that flags at-risk shipments 24\u201348 hours before breach\n\u2022 Role-based dashboards for planners, ops managers and the C-suite\n\nDeployed on AWS using Lambda for event-driven alert processing. I owned the full product lifecycle from discovery through to adoption metrics tracking."
     },
     {
       "title": "E-commerce Platform",
-      "description": "Full-featured e-commerce platform with payments integration",
+      "description": "Full-featured e-commerce platform with payments integration, order management and warehouse fulfilment connectivity.",
       "tech": [
         "React",
         "Node.js",
-        "Stripe"
+        "Stripe",
+        "PostgreSQL",
+        "WMS Integration",
+        "REST API"
       ],
       "link": "",
-      "id": "64105ab4a7d34913b468bf82ec4d1932"
+      "id": "64105ab4a7d34913b468bf82ec4d1932",
+      "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc4MDAnIGhlaWdodD0nNDAwJz48cmVjdCB3aWR0aD0nODAwJyBoZWlnaHQ9JzQwMCcgZmlsbD0nIzRhMWEyYScvPjx0ZXh0IHg9JzQwMCcgeT0nMjAwJyBmb250LWZhbWlseT0nQXJpYWwnIGZvbnQtc2l6ZT0nMzYnIGZvbnQtd2VpZ2h0PSdib2xkJyBmaWxsPSd3aGl0ZScgdGV4dC1hbmNob3I9J21pZGRsZScgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZSc+RS1jb21tZXJjZSBQbGF0Zm9ybTwvdGV4dD48L3N2Zz4=",
+      "writeup": "A ground-up e-commerce platform built to connect online storefronts directly to warehouse fulfilment systems \u2014 bridging the gap between customer order and physical despatch.\n\nHighlights:\n\u2022 Stripe-powered checkout with support for split payments, refunds and partial fulfilment\n\u2022 Real-time stock availability synced from the WMS to prevent overselling\n\u2022 Order routing logic that assigns fulfilment to the nearest stocked warehouse location\n\u2022 Returns management portal with automated RMA generation and stock reconciliation\n\u2022 Admin dashboard for catalogue management, pricing rules and order operations\n\nBuilt as a React SPA with a Node.js API layer. The WMS integration was the most complex piece \u2014 translating e-commerce order lines into WMS pick tasks while handling partial stock and backorder scenarios."
     }
   ],
   "experience": [
