@@ -8,6 +8,7 @@ import Projects from './components/Projects';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import Admin from './Admin';
+import ParallaxBackground from './components/ParallaxBackground';
 import { useEffect, useState } from 'react';
 import { API_URL } from './config';
 
@@ -57,40 +58,51 @@ function App() {
     '--site-muted': theme.mutedTextColor,
     '--site-accent': theme.accentColor,
     '--site-radius': `${theme.buttonRadius}px`,
-    backgroundColor: theme.backgroundColor,
+    // No backgroundColor here — sections own their backgrounds so the
+    // fixed parallax layer shows through their semi-transparent surfaces.
     color: theme.textColor,
     fontFamily: theme.fontFamily,
   };
 
   return (
-    <div className="min-h-screen" style={themeStyle}>
-      <Navbar onAdminClick={() => setShowAdmin(true)} />
+    // Outer div: only sets CSS variables — no position/z-index so it does NOT
+    // create a stacking context, letting the fixed ParallaxBackground live in
+    // the root stacking context (z-index 0) while content sits at z-index 1.
+    <div style={themeStyle}>
+      <ParallaxBackground />
 
-      <main>
-        <section id="home">
-          <Hero />
-        </section>
+      <div
+        className="min-h-screen"
+        style={{ position: 'relative', zIndex: 1, color: theme.textColor, fontFamily: theme.fontFamily }}
+      >
+        <Navbar onAdminClick={() => setShowAdmin(true)} />
 
-        <section id="experience">
-          <Experience />
-        </section>
+        <main>
+          <section id="home">
+            <Hero />
+          </section>
 
-        <section id="skills">
-          <Skills />
-        </section>
+          <section id="experience">
+            <Experience />
+          </section>
 
-        <section id="projects">
-          <Projects />
-        </section>
+          <section id="skills">
+            <Skills />
+          </section>
 
-        <section id="contact">
-          <Contact />
-        </section>
-      </main>
+          <section id="projects">
+            <Projects />
+          </section>
 
-      <Footer />
+          <section id="contact">
+            <Contact />
+          </section>
+        </main>
 
-      {showAdmin && <Admin onClose={() => setShowAdmin(false)} />}
+        <Footer />
+
+        {showAdmin && <Admin onClose={() => setShowAdmin(false)} />}
+      </div>
     </div>
   );
 }

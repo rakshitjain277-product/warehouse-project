@@ -11,22 +11,24 @@ body {
 }
 
 .theme-nav {
-  background: var(--site-bg);
+  background: color-mix(in srgb, var(--site-bg) 80%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   color: var(--site-text);
 }
 
 .theme-section {
-  background: var(--site-bg);
+  background: color-mix(in srgb, var(--site-bg) 40%, transparent);
   color: var(--site-text);
 }
 
 .theme-section-alt {
-  background: var(--site-section);
+  background: color-mix(in srgb, var(--site-section) 45%, transparent);
   color: var(--site-text);
 }
 
 .theme-surface {
-  background: var(--site-surface);
+  background: color-mix(in srgb, var(--site-surface) 70%, transparent);
   color: var(--site-text);
 }
 
