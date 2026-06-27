@@ -73,54 +73,55 @@ function useCountUp(target, duration = 2200, active = false) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SPACE BACKGROUND — fixed, full-viewport, autoplay + CSS parallax
-// The video plays smoothly on its own; scroll only shifts it vertically (no
-// currentTime scrubbing, which always causes decode jank on large videos).
+//
+// Technique: content scrolls UP, video drifts DOWN — opposite directions
+// create the strongest perceived depth. Combined with a slow zoom-in (scale),
+// the effect is unmistakable even on a long page.
+//
+// Buffer math: video at top:-25% height:150% gives 25vh clearance above/below.
+// Max downward drift = 160px, which is safely inside that buffer at ≥640px screens.
 // ─────────────────────────────────────────────────────────────────────────────
 
 function SpaceBackground() {
   const videoRef = useRef(null);
   const rafRef = useRef(null);
-  const scrollTarget = useRef(0);
-  const scrollSmooth = useRef(0);
+  const rawTarget = useRef(0);   // raw post-hero scroll in px
+  const rawSmooth = useRef(0);   // smoothed version
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    const updateScroll = () => {
-      const viewH = window.innerHeight;
-      const totalScroll = Math.max(1, document.documentElement.scrollHeight - viewH);
-      const heroH = viewH; // skip the hero section
-      const afterHero = Math.max(0, window.scrollY - heroH);
-      scrollTarget.current = Math.min(1, afterHero / Math.max(1, totalScroll - heroH));
+    const onScroll = () => {
+      // Track px scrolled past the hero (first 100vh), not a 0-1 progress.
+      // Using raw px means the video moves at a constant rate per px of scroll
+      // rather than compressing all movement into the final few px of a long page.
+      rawTarget.current = Math.max(0, window.scrollY - window.innerHeight);
     };
 
     const tick = () => {
-      scrollSmooth.current += (scrollTarget.current - scrollSmooth.current) * 0.055;
-      const p = scrollSmooth.current;
+      rawSmooth.current += (rawTarget.current - rawSmooth.current) * 0.07;
+      const px = rawSmooth.current;
 
       if (video) {
-        // ±180px vertical shift — clearly visible as you scroll
-        const y = (p - 0.5) * 360;
-        // Scale grows 1.15 → 1.28 — slowly zooms into the stars
-        const scale = 1.15 + p * 0.13;
-        // Saturation 0.8 → 1.15 — space gets more vivid deeper in
-        const sat = 0.8 + p * 0.35;
-        video.style.transform = `translateY(${y.toFixed(1)}px) scale(${scale.toFixed(3)})`;
-        video.style.filter = `saturate(${sat.toFixed(2)})`;
+        // Drift DOWN at 18% of scroll speed — opposite to content = strong depth
+        const drift = Math.min(px * 0.18, 160);
+        // Zoom in slowly: adds ~8% scale over ~900px of scroll
+        const scale = 1 + Math.min(px / 900, 1) * 0.08;
+        video.style.transform = `translateY(${drift.toFixed(1)}px) scale(${scale.toFixed(3)})`;
       }
 
       rafRef.current = requestAnimationFrame(tick);
     };
 
-    updateScroll();
-    window.addEventListener('scroll', updateScroll, { passive: true });
-    window.addEventListener('resize', updateScroll);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
     rafRef.current = requestAnimationFrame(tick);
 
     return () => {
-      window.removeEventListener('scroll', updateScroll);
-      window.removeEventListener('resize', updateScroll);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
       cancelAnimationFrame(rafRef.current);
     };
   }, []);
@@ -142,12 +143,11 @@ function SpaceBackground() {
           top: '-25%', left: '-5%',
           width: '110%', height: '150%',
           objectFit: 'cover',
-          willChange: 'transform, filter',
+          willChange: 'transform',
           transformOrigin: 'center center',
         }}
       />
-      {/* Lighter overlay — video needs to be seen for parallax to register */}
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.42)' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.40)' }} />
     </div>
   );
 }
