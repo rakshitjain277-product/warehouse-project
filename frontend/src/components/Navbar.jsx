@@ -1,4 +1,4 @@
-export default function Navbar({ onAdminClick }) {
+export default function Navbar({ onAdminClick, onSupplyChainClick }) {
   return (
     <nav
       className="fixed top-0 w-full z-40"
@@ -10,12 +10,35 @@ export default function Navbar({ onAdminClick }) {
       }}
     >
       <div className="max-w-6xl mx-auto flex items-center justify-between px-6 h-16">
-        <a
-          href="#home"
-          className="font-bold text-base tracking-tight hover:opacity-80 transition-opacity"
-        >
-          Rakshit Jain
-        </a>
+        <div className="flex items-center gap-4">
+          <a
+            href="#home"
+            className="font-bold text-base tracking-tight hover:opacity-80 transition-opacity"
+          >
+            Rakshit Jain
+          </a>
+          <div style={{ width: 1, height: 18, background: 'color-mix(in srgb, var(--site-text) 18%, transparent)' }} />
+          <button
+            type="button"
+            onClick={onSupplyChainClick}
+            style={{
+              background: 'none',
+              border: '1px solid rgba(255,107,43,0.35)',
+              color: '#ff6b2b',
+              borderRadius: 8,
+              padding: '4px 12px',
+              cursor: 'pointer',
+              fontSize: 12,
+              fontWeight: 700,
+              letterSpacing: '0.04em',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,107,43,0.1)'; e.currentTarget.style.borderColor = '#ff6b2b'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = 'rgba(255,107,43,0.35)'; }}
+          >
+            Supply Chain ›
+          </button>
+        </div>
 
         <div className="flex items-center gap-5 md:gap-7 text-sm">
           <a href="#experience" className="theme-muted hover:opacity-100 transition-opacity duration-200 hidden md:block">

@@ -9,6 +9,7 @@ import Contact from './components/Contact';
 import Footer from './components/Footer';
 import Admin from './Admin';
 import ParallaxBackground from './components/ParallaxBackground';
+import SupplyChain from './pages/SupplyChain';
 import { useEffect, useState } from 'react';
 import { API_URL } from './config';
 
@@ -25,6 +26,7 @@ const defaultTheme = {
 
 function App() {
   const [showAdmin, setShowAdmin] = useState(false);
+  const [showSupplyChain, setShowSupplyChain] = useState(false);
   const [theme, setTheme] = useState(defaultTheme);
 
   useEffect(() => {
@@ -64,6 +66,10 @@ function App() {
     fontFamily: theme.fontFamily,
   };
 
+  if (showSupplyChain) {
+    return <SupplyChain onClose={() => setShowSupplyChain(false)} />;
+  }
+
   return (
     // Outer div: only sets CSS variables — no position/z-index so it does NOT
     // create a stacking context, letting the fixed ParallaxBackground live in
@@ -75,7 +81,7 @@ function App() {
         className="min-h-screen"
         style={{ position: 'relative', zIndex: 1, color: theme.textColor, fontFamily: theme.fontFamily }}
       >
-        <Navbar onAdminClick={() => setShowAdmin(true)} />
+        <Navbar onAdminClick={() => setShowAdmin(true)} onSupplyChainClick={() => setShowSupplyChain(true)} />
 
         <main>
           <section id="home">
