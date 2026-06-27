@@ -72,56 +72,100 @@ function useCountUp(target, duration = 2200, active = false) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SPACE BACKGROUND — fixed, full-viewport, autoplay + CSS parallax
-//
-// Technique: content scrolls UP, video drifts DOWN — opposite directions
-// create the strongest perceived depth. Combined with a slow zoom-in (scale),
-// the effect is unmistakable even on a long page.
-//
-// Buffer math: video at top:-25% height:150% gives 25vh clearance above/below.
-// Max downward drift = 160px, which is safely inside that buffer at ≥640px screens.
+// SPACE BACKGROUND — scroll-scrubbed, exactly like the skydiving parallax.
+// Scroll position after the hero drives video.currentTime (0 → duration).
+// A lerp (0.07) smooths the progress so scrubbing never feels abrupt.
+// CSS scale + translateY add a second layer of depth on top of the time scrub.
 // ─────────────────────────────────────────────────────────────────────────────
 
 function SpaceBackground() {
   const videoRef = useRef(null);
   const rafRef = useRef(null);
-  const rawTarget = useRef(0);   // raw post-hero scroll in px
-  const rawSmooth = useRef(0);   // smoothed version
+  const scrollTarget = useRef(0);
+  const scrollSmooth = useRef(0);
+  const durationRef = useRef(0);
+  const videoReadyRef = useRef(false);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    const onScroll = () => {
-      // Track px scrolled past the hero (first 100vh), not a 0-1 progress.
-      // Using raw px means the video moves at a constant rate per px of scroll
-      // rather than compressing all movement into the final few px of a long page.
-      rawTarget.current = Math.max(0, window.scrollY - window.innerHeight);
+    // Progress 0→1 over the scrollable area that sits BELOW the hero (100vh).
+    const getProgress = () => {
+      const heroH = window.innerHeight;
+      const scrollH = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+      const maxScroll = Math.max(scrollH - heroH - window.innerHeight, 1);
+      return Math.min(Math.max((window.scrollY - heroH) / maxScroll, 0), 1);
+    };
+
+    const updateScrollTarget = () => { scrollTarget.current = getProgress(); };
+
+    const updateDuration = () => {
+      if (video?.duration && Number.isFinite(video.duration)) durationRef.current = video.duration;
+      if (video?.readyState >= 2) videoReadyRef.current = true;
+    };
+
+    // Warm the video: play briefly to decode metadata + first frame, then pause.
+    // After pause the RAF loop owns currentTime exclusively.
+    const warmVideo = () => {
+      video.muted = true;
+      video.defaultMuted = true;
+      video.setAttribute('muted', '');
+      video.setAttribute('playsinline', '');
+      video.load();
+      const p = video.play();
+      if (p?.then) p.then(() => { video.pause(); updateDuration(); }).catch(updateDuration);
     };
 
     const tick = () => {
-      rawSmooth.current += (rawTarget.current - rawSmooth.current) * 0.07;
-      const px = rawSmooth.current;
+      // Lerp toward target — 0.07 gives a ~200 ms ease identical to skydive.
+      scrollSmooth.current += (scrollTarget.current - scrollSmooth.current) * 0.07;
+      const progress = scrollSmooth.current;
 
       if (video) {
-        // Drift DOWN at 18% of scroll speed — opposite to content = strong depth
-        const drift = Math.min(px * 0.18, 160);
-        // Zoom in slowly: adds ~8% scale over ~900px of scroll
-        const scale = 1 + Math.min(px / 900, 1) * 0.08;
-        video.style.transform = `translateY(${drift.toFixed(1)}px) scale(${scale.toFixed(3)})`;
+        const duration = durationRef.current;
+        if (duration > 0 && videoReadyRef.current) {
+          const targetTime = Math.min(duration - 0.05, Math.max(0, progress * duration));
+          // Only seek when the delta exceeds 40 ms — avoids redundant decode calls.
+          if (Math.abs(video.currentTime - targetTime) > 0.04) {
+            // fastSeek snaps to the nearest keyframe (no decode wait) — much smoother
+            // than currentTime on large files; falls back gracefully where unsupported.
+            if (typeof video.fastSeek === 'function') video.fastSeek(targetTime);
+            else video.currentTime = targetTime;
+          }
+        }
+
+        // CSS layer on top of time-scrub: gentle zoom-in + upward drift
+        const dive = Math.sin(progress * Math.PI); // peaks at progress = 0.5
+        const scale = 1.12 + dive * 0.12;
+        const y = progress * -35;
+        video.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0) scale(${scale.toFixed(3)})`;
+        video.style.filter = `saturate(${(1.05 + dive * 0.18).toFixed(3)}) contrast(${(1.04 + progress * 0.1).toFixed(3)})`;
       }
 
       rafRef.current = requestAnimationFrame(tick);
     };
 
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
+    updateScrollTarget();
+    updateDuration();
+    video.addEventListener('loadedmetadata', updateDuration);
+    video.addEventListener('loadeddata', updateDuration);
+    video.addEventListener('canplay', updateDuration);
+    video.addEventListener('durationchange', updateDuration);
+    warmVideo();
+    window.addEventListener('scroll', updateScrollTarget, { passive: true });
+    window.addEventListener('resize', updateScrollTarget);
+    window.addEventListener('touchstart', warmVideo, { passive: true, once: true });
     rafRef.current = requestAnimationFrame(tick);
 
     return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
+      video.removeEventListener('loadedmetadata', updateDuration);
+      video.removeEventListener('loadeddata', updateDuration);
+      video.removeEventListener('canplay', updateDuration);
+      video.removeEventListener('durationchange', updateDuration);
+      window.removeEventListener('scroll', updateScrollTarget);
+      window.removeEventListener('resize', updateScrollTarget);
+      window.removeEventListener('touchstart', warmVideo);
       cancelAnimationFrame(rafRef.current);
     };
   }, []);
@@ -129,25 +173,31 @@ function SpaceBackground() {
   return (
     <div
       aria-hidden="true"
-      style={{
-        position: 'fixed', inset: 0, zIndex: 0,
-        overflow: 'hidden', pointerEvents: 'none',
-      }}
+      style={{ position: 'fixed', inset: 0, zIndex: 0, overflow: 'hidden', pointerEvents: 'none', background: '#050713' }}
     >
       <video
         ref={videoRef}
         src="/Space-SciFi.mp4"
-        autoPlay loop muted playsInline preload="auto"
+        muted playsInline preload="auto"
         style={{
-          position: 'absolute',
-          top: '-25%', left: '-5%',
-          width: '110%', height: '150%',
+          position: 'absolute', inset: 0,
+          width: '100%', height: '100%',
           objectFit: 'cover',
-          willChange: 'transform',
+          opacity: 0.96,
+          willChange: 'transform, filter',
           transformOrigin: 'center center',
+          transform: 'scale(1.12)',
         }}
       />
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.40)' }} />
+      {/* gradient overlays — same as skydive parallax for consistent premium feel */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(180deg, rgba(3,7,18,0.28) 0%, rgba(3,7,18,0.02) 36%, rgba(3,7,18,0.72) 100%)',
+      }} />
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'radial-gradient(ellipse at 50% 38%, rgba(255,255,255,0) 34%, rgba(0,0,0,0.52) 100%)',
+      }} />
     </div>
   );
 }
