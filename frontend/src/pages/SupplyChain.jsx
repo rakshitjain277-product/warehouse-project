@@ -96,12 +96,20 @@ function SpaceBackground() {
     };
 
     const tick = () => {
-      scrollSmooth.current += (scrollTarget.current - scrollSmooth.current) * 0.06;
+      scrollSmooth.current += (scrollTarget.current - scrollSmooth.current) * 0.055;
       const p = scrollSmooth.current;
-      // Shift video up as user scrolls down — creates depth behind sections
-      // top:-10% height:120% gives 10vh buffer on each side to hide the gap
-      const maxShift = 70; // px — stays within the 10% buffer at any viewport height
-      if (video) video.style.transform = `translateY(${(p - 0.5) * 2 * maxShift}px)`;
+
+      if (video) {
+        // ±180px vertical shift — clearly visible as you scroll
+        const y = (p - 0.5) * 360;
+        // Scale grows 1.15 → 1.28 — slowly zooms into the stars
+        const scale = 1.15 + p * 0.13;
+        // Saturation 0.8 → 1.15 — space gets more vivid deeper in
+        const sat = 0.8 + p * 0.35;
+        video.style.transform = `translateY(${y.toFixed(1)}px) scale(${scale.toFixed(3)})`;
+        video.style.filter = `saturate(${sat.toFixed(2)})`;
+      }
+
       rafRef.current = requestAnimationFrame(tick);
     };
 
@@ -131,13 +139,15 @@ function SpaceBackground() {
         autoPlay loop muted playsInline preload="auto"
         style={{
           position: 'absolute',
-          top: '-10%', left: 0,
-          width: '100%', height: '120%',
+          top: '-25%', left: '-5%',
+          width: '110%', height: '150%',
           objectFit: 'cover',
-          willChange: 'transform',
+          willChange: 'transform, filter',
+          transformOrigin: 'center center',
         }}
       />
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.52)' }} />
+      {/* Lighter overlay — video needs to be seen for parallax to register */}
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.42)' }} />
     </div>
   );
 }
